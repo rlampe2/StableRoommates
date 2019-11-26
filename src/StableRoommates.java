@@ -213,7 +213,7 @@ public class StableRoommates {
 		boolean possibleSoln = (proposer == nextChoice); //check if the next choice is theirself
 			
 			this.solnPossible = possibleSoln;
-			return possibleSoln;
+			return;
 
 	}
 		
