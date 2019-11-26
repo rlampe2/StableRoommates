@@ -275,11 +275,17 @@ public class StableRoommates {
 			int qTerm = this.reducedPMatrix[pTerm].get(1);
 			this.qCycle.add(qTerm);
 			//update pTerm to be last potential partner in qTerm
-			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size() - 1);
+			
+			
+			//pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size() - 1);
+			
+//Hey you! I'm trying to find the bugs, and the above isn't wrong so i just commented it out. 
+//I added the line below instead 
+pTerm = this.reducedPMatrix[qTerm].getLast();
 		}
 		this.firstRepeat = pTerm;
-		//after stopping at the line above, i get a p array of 1, 2,3 which doesn't make sense
-		//to me... the q is 4,1,4 which matches the book page 584 (accoutning for one indexing)
+		//after stopping at the line above, i get a p array of 1, 2,3 (2) which makes sense
+		//to me... the q is 4,1,4 which also matches the book page 584 (accoutning for one indexing)
 		
 		return;
 	}
@@ -299,9 +305,17 @@ public class StableRoommates {
 				//and moves the first and second index of its previous proposer (p_i by construction) each to the right one
 				
 			//	this.lsrMatrix[this.pCycle.get(i)][0]++;
+//remove the "q"/b from p(i + 1) -1 for indexing?
+/*Hey so in the example on page 584, they only have two a_s, a_1 and a_2. So
+ * like, one i think this is different than the p values but also
+ * there are only two of them, and this loop is making 3 removals? Is that intentional?
+ * 				
+ */
+				
 				this.reducedPMatrix[this.pCycle.get(i)].removeFirst();
 			//	this.lsrMatrix[this.pCycle.get(i)][1]++;
 			//	this.lsrMatrix[this.qCycle.get((i+1) % this.pCycle.size())][2]--;
+				
 				this.reducedPMatrix[this.qCycle.get((i+1) % this.pCycle.size())].removeLast();
 			}
 			//update next firstInCycle to be the last element of the tail
