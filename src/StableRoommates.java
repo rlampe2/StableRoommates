@@ -258,6 +258,8 @@ public class StableRoommates {
 	 * this method finds the first instance at which a person still has more than one
 	 * possible partner and updates them to be the new first in the cycle
 	 * 
+	 * This is causing problems if every single list has only one element...
+	 * adding check before call to this function
 	 * See PASCAL : procedure find
 	 */
 	public void findFirstUnmatched() {
@@ -265,6 +267,12 @@ public class StableRoommates {
 		//this function is only called once in the actual program
 		while(this.reducedPMatrix[this.firstInCycle].size() == 1) {
 			this.firstInCycle++;
+			if(this.firstInCycle == this.numPeople) {
+				//we have a soln!
+				//TODO Verify that this is what we want, as opposed to no soln found
+				this.solnFound = true;
+				return;
+			}
 		}
 		return;
 	}
@@ -576,7 +584,29 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		}else {
 			StableRoommates.printNoSolution();
 		}
-
+		
+		
+		Integer[][] testPMatrix3 = new Integer[][] {
+			{2, 5, 4, 6, 7, 8, 3, 1},
+			{3, 6, 1, 7, 8, 5, 4, 2},
+			{4, 7, 2, 8, 5, 6, 1, 3},
+			{1, 8, 3, 5, 6, 7, 2, 4},
+			{6, 1, 8, 2, 3, 4, 7, 5},
+			{7, 2, 5, 3, 4, 1, 8, 6},
+			{8, 3, 6, 4, 1, 2, 5, 7},
+			{5, 4, 7, 1, 2, 3, 6, 8}
+		};
+		StableRoommates instance3 = new StableRoommates(testPMatrix3);
+		instance3.findSolution();
+		
+		System.out.println("\nTesting on a known several soln- preferences matrix:");
+		
+		if(instance3.solnFound) {
+			instance3.printSolution();
+		}else {
+			StableRoommates.printNoSolution();
+		}
+		
 		
 		
 	}
