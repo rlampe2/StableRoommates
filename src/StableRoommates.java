@@ -200,12 +200,7 @@ public class StableRoommates {
 					this.lsrMatrix[proposer][0] += 1;
 					//update next choice
 					nextChoice = this.preferenceMatrix[proposer][this.lsrMatrix[proposer ][0]];
-					
-				//	nextChoice = this.proposalMatrix[proposer][this.lsrMatrix[0][proposer ++] ];
-					//I don't think this is gonna do what we want. 
-					
 					current = this.preferenceMatrix[nextChoice][this.lsrMatrix[nextChoice][2]];
-	
 				}
 			
 				//next choice holds the proposer, and rejects current 
@@ -219,14 +214,14 @@ public class StableRoommates {
 			hasProposed.add(nextChoice);
 		}
 		
-		boolean possibleSoln = (proposer == nextChoice); //check if the next choice is theirself
+		boolean possibleSoln = (proposer == nextChoice); //check if the next choice is their-self
 			
 			this.solnPossible = possibleSoln;
 			return solnPossible;
 
 	}
 	
-	/*
+	/**
 	 * This method iterates over the current stage of the reducedPmatrix LinkedList and checks if each head is equal to the 
 	 * index of which list it is and if so, then it updates solnPossible to show that there is no possible solution because 
 	 * the person's only remaining possible partner is themself
@@ -250,7 +245,7 @@ public class StableRoommates {
 		return;
 	}
 		
-	/*
+	/**
 	 * this method finds the first instance at which a person still has more than one
 	 * possible partner and updates them to be the new first in the cycle
 	 * 
@@ -273,7 +268,7 @@ public class StableRoommates {
 		return;
 	}
 	
-	/*
+	/**
 	 * this method generates the two cycles p and q where q is made up of the second potential partners of
 	 * each p and p is made up of the last potential partner of the prior q
 	 */
@@ -290,38 +285,30 @@ public class StableRoommates {
 			int qTerm = this.reducedPMatrix[pTerm].get(1);
 			this.qCycle.add(qTerm);
 			//update pTerm to be last potential partner in qTerm
-			
-			
-			//pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size() - 1);
-			
-//Hey you! I'm trying to find the bugs, and the above isn't wrong so i just commented it out. 
-//I added the line below instead 
-pTerm = this.reducedPMatrix[qTerm].getLast();
+			pTerm = this.reducedPMatrix[qTerm].getLast();
 		}
 		//Note the above is the person that repeated, not an index. 
 		this.firstRepeat = pTerm;
-		
-		//after stopping at the line above, i get a p array of 1, 2,3 (2) which makes sense
-		//to me... the q is 4,1,4 which also matches the book page 584 (accoutning for one indexing)
-		
+
 		return;
 	}
 	
 	
-	/*
+	/**
 	 * this method uses the two sequences p and q and forces each element in q to reject the proposal it has
 	 * this implements one iteration of the phase 2 reduction
+	 * 
+	 * 
+	 * 	Make sure that when q rejects p, we go to ps new first choice (ie what used to be their backup) and delete everything in 
+	 *  the backups reduced list that happens to be after p. (ie after square)
+	 * 
 	 */
-	
-	
-	//TODO: Make sure that when q rejects p, we go to ps new first choice (ie what used to be their backup) and delete everything in 
-	//the backups reduced list that happens to be after p. (ie after square)
-	
-	//NOTE: This successfully found the even more reduced matrix list for first iteration of phase 2 reduction. 
-	//need to then force the deletions above. 
+
 	@SuppressWarnings("deprecation")
+	//Need the above to be able to remove based on an object location not an index (but our objects are ints
+	//so java likes to get upset)
 	public void phase2Reduction() {
-		//check if we know theres isn't a possible soln:
+		//check if we know there isn't a possible soln:
 		if(this.pCycle.size() == 1) {
 			this.solnPossible = false;
 			return;
@@ -342,8 +329,6 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 			
 				//then also, remove p from q's list
 				this.reducedPMatrix[this.qCycle.get(j - 1)].remove(new Integer(currentPersonP));
-				
-				//Robyn, this is the thingy we talked about before you left for break
 				//ie, when P is forced to take their second choice, we remove
 				//anyone after p on the second choice persons reduced list
 				//who has become the first person b/c we made the first reject them
@@ -359,12 +344,7 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 				while(this.reducedPMatrix[psSecondChoice].getLast() != currentPersonP) {
 					this.reducedPMatrix[psSecondChoice].removeLast();
 				}
-				//also it looks like in the handout on page 584 that the "bi+1" is also
-				//removed from everyone elses lists (ie full blown phase 1??)
-				
-			}
-			//running into a problem on first iteration of the above while loop.
-			//when running this and removing the people that were in person 5 (for 1 indexed)
+			}//when running this and removing the people that were in person 5 (for 1 indexed)
 			//we remove one of the elements that is also supposed to get removed by our sequence
 			//so probably we will need to have another check in our removal algorithm to make
 			//certain that we are only poping off the first/last indices if the perosn we 
@@ -387,9 +367,6 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 			while(this.reducedPMatrix[psSecondChoice].getLast() != lastPersonInPCycle) {
 				this.reducedPMatrix[psSecondChoice].removeLast();
 			}
-			
-			
-			
 			//update the first in cycle to be the tail of this guy
 			
 			//TODO VERIFY
@@ -399,40 +376,6 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 				this.findFirstUnmatched();
 			}			
 		}
-		
-		
-		
-	/*	if(this.pCycle.size() == 1) {
-			this.solnPossible = false;
-			return;
-		}else {
-			for(int i = 0; i < this.pCycle.size(); i++) {
-				//force each q to reject the proposal it currently holds which moves its right index left one 
-				//and moves the first and second index of its previous proposer (p_i by construction) each to the right one
-				
-			//	this.lsrMatrix[this.pCycle.get(i)][0]++;
-//remove the "q"/b from p(i + 1) -1 for indexing?
-//Hey so in the example on page 584, they only have two a_s, a_1 and a_2. So
-//  like, one i think this is different than the p values but also
-//  there are only two of them, and this loop is making 3 removals? Is that intentional?
-  				
- 
-				
-				this.reducedPMatrix[this.pCycle.get(i)].removeFirst();
-			//	this.lsrMatrix[this.pCycle.get(i)][1]++;
-			//	this.lsrMatrix[this.qCycle.get((i+1) % this.pCycle.size())][2]--;
-				
-				this.reducedPMatrix[this.qCycle.get((i+1) % this.pCycle.size())].removeLast();
-			}
-			//update next firstInCycle to be the last element of the tail
-			if(this.positionInCycle[this.firstRepeat] > 0) {
-				this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);
-			}else {
-				this.findFirstUnmatched();
-			}
-		}*/
-		
-		
 	}
 	
 	
@@ -441,12 +384,10 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 	public void findSolution() {
 		//First set all the second preferences based on linked list 
 		for(int i = 0; i < this.numPeople; i++) {
-			//this.lsrMatrix[i][1] = this.reducedPMatrix[i].get(1); 
 			//actually just set it to two
 			this.lsrMatrix[i][1] = 1;
 		}
 		
-		//this method seems to work fine //eventually remove comment
 		this.findFirstUnmatched();
 		
 				
@@ -459,9 +400,7 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 			this.pCycle.clear();
 			this.qCycle.clear();
 			
-			
-			
-			this.findCycle();//need to check if solveavel fisr
+			this.findCycle();
 			if(this.pCycle.size() == 1) {
 				//there is no solution
 				this.solnPossible = false;
@@ -602,9 +541,7 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		}else {
 			StableRoommates.printNoSolution();
 		}
-		
-		
-		
+
 	}
 	
 	
