@@ -157,7 +157,7 @@ public class StableRoommates {
 			for(int j = 0; j < this.numPeople; j++) {
 				
 				//see corollary 1.2 and 1.3 or something like that
-				if(!( j > this.lsrMatrix[i][2] ) || this.lsrMatrix[this.preferenceMatrix[i][j] ] [2] < this.rankMatrix[this.preferenceMatrix[i][j]][i]) {
+				if(!( j > this.lsrMatrix[i][2]  || this.lsrMatrix[this.preferenceMatrix[i][j] ] [2] < this.rankMatrix[this.preferenceMatrix[i][j]][i])) {
 					reducedPMatrix[i].add(this.preferenceMatrix[i][j]);
 				}
 			}
