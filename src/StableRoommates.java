@@ -32,19 +32,22 @@ public class StableRoommates {
 	public ArrayList<Integer> qCycle = new ArrayList<>();
 	public Integer[] positionInCycle;
 	
+	//to help with making final output match input format
+	public boolean wasOneIndexed; 
+	
 	
 	
 	//constructor
 	public StableRoommates(Integer[][] pMatrix) {
 		this.preferenceMatrix = pMatrix;
 		//check the first row to see if there is an entry equal to the size of the matrix
-		boolean oneIndex = false;
+		this.wasOneIndexed = false;
 		for(int i = 0; i < pMatrix.length; i++) {
 			if(pMatrix[0][i] == pMatrix.length) {
-				oneIndex = true;
+				this.wasOneIndexed = true;
 			}
 		}
-		if(oneIndex ) {
+		if(this.wasOneIndexed ) {
 			this.zeroifyMatrix();
 		}
 		
@@ -233,8 +236,16 @@ public class StableRoommates {
 	 * the person's only remaining possible partner is themself
 	 * 
 	 * Tbh not sure if we will use this yet
+	 * 
+	 * This needs either removed or modified, because the phase two reduction method
+	 * is getting empty strings. 
+	 * -Are we actually using this importantly?
+	 * 
 	 */
 	public void checkSolnPossible() {
+		if(this.solnPossible == false) {
+			return;
+		}
 		for(int i = 0; i < this.numPeople; i++) {
 			if(this.reducedPMatrix[i].getFirst() == i) {
 				this.solnPossible = false;
@@ -332,6 +343,12 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 				//ie, when P is forced to take their second choice, we remove
 				//anyone after p on the second choice persons reduced list
 				//who has become the first person b/c we made the first reject them
+				
+				//Quick check to see if soln isn't possible
+				if(this.reducedPMatrix[currentPersonP].size() == 0) {
+					this.solnPossible = false;
+					return;
+				}
 				int psSecondChoice = this.reducedPMatrix[currentPersonP].get(0);
 				//remove anything after them
 				//yes sorry this is eniffecient
@@ -471,8 +488,12 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 	
 	public  void printSolution() {
 		System.out.println("A stable pairing has been found!\nThe assignments are:\n");
+		int j = 0;
+		if(this.wasOneIndexed) {
+			j++;
+		}
 		for(int i = 0; i < this.numPeople; i++) {
-			System.out.printf("%2d is paired with: %2d\n", i, this.reducedPMatrix[i].get(0));
+			System.out.printf("%2d is paired with: %2d\n", i + j, this.reducedPMatrix[i].get(0) + j);
 		}
 	}
 	
@@ -522,6 +543,7 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		*/
 		
 		//Run phase two reduction until we either make it work or know it can't be done
+		System.out.println("\nTesting on a known solvable preferences matrix:");
 		instance1.findSolution();
 		
 		if(instance1.solnFound) {
@@ -529,6 +551,32 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		}else {
 			StableRoommates.printNoSolution();
 		}
+		
+		
+		
+		//Test number 2: Known to have no soln:
+		//test from page 586
+		Integer[][] testPMatrix2 = new Integer[][] {
+			{2, 6, 4, 3, 5, 1},
+			{3, 5, 1, 6, 4, 2},
+			{1, 6, 2, 5, 4, 3},
+			{5, 2, 3, 6, 1, 4},
+			{6, 1, 3, 4, 2, 5},
+			{4, 2, 5, 1, 3, 6}
+		};
+		StableRoommates instance2 = new StableRoommates(testPMatrix2);
+		instance2.findSolution();
+		//RJL - verified that the reduced matrix is correct. 
+		//RJL - verified that the first iteration pcycle is correct (0 1 2)
+		//Q cycle looks good too!
+		System.out.println("\nTesting on a known no soln- preferences matrix:");
+		
+		if(instance2.solnFound) {
+			instance2.printSolution();
+		}else {
+			StableRoommates.printNoSolution();
+		}
+
 		
 		
 	}
