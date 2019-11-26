@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -295,8 +294,42 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 	 * this method uses the two sequences p and q and forces each element in q to reject the proposal it has
 	 * this implements one iteration of the phase 2 reduction
 	 */
+	@SuppressWarnings("deprecation")
 	public void phase2Reduction() {
+		//check if we know theres isn't a possible soln:
 		if(this.pCycle.size() == 1) {
+			this.solnPossible = false;
+			return;
+		}else {
+			//perform rejections
+			//start at 1 b/c pi reject q_i - 1;
+			//can't start at one, needs to start where the cycle starts. 
+			int i = this.positionInCycle[this.firstRepeat];
+			
+			for(int j = i + 1; j < this.pCycle.size(); j++) {
+				//delete each from each others lists...
+				this.reducedPMatrix[pCycle.get(j)].remove(new Integer(this.qCycle.get(j - 1))); //want to remove the value of q from the reduced list of p, not the index. 
+			
+				//then also, remove p from q's list
+				this.reducedPMatrix[this.qCycle.get(j - 1)].remove(new Integer(this.pCycle.get(j)));
+			}
+			
+			//also have to do the first p that is actually in cycle getting rejected by last q because we don't hold the last p in the set
+			this.reducedPMatrix[pCycle.get(i)].remove(new Integer(this.qCycle.get(qCycle.size() - 1)));
+			//remove the q from p
+			this.reducedPMatrix[this.qCycle.get(this.qCycle.size() - 1)].removeLast();
+			
+			
+			
+			//update the first in cycle to be the tail of this guy
+			
+			//fix
+			this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);			
+		}
+		
+		
+		
+	/*	if(this.pCycle.size() == 1) {
 			this.solnPossible = false;
 			return;
 		}else {
@@ -306,11 +339,11 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 				
 			//	this.lsrMatrix[this.pCycle.get(i)][0]++;
 //remove the "q"/b from p(i + 1) -1 for indexing?
-/*Hey so in the example on page 584, they only have two a_s, a_1 and a_2. So
- * like, one i think this is different than the p values but also
- * there are only two of them, and this loop is making 3 removals? Is that intentional?
- * 				
- */
+//Hey so in the example on page 584, they only have two a_s, a_1 and a_2. So
+//  like, one i think this is different than the p values but also
+//  there are only two of them, and this loop is making 3 removals? Is that intentional?
+  				
+ 
 				
 				this.reducedPMatrix[this.pCycle.get(i)].removeFirst();
 			//	this.lsrMatrix[this.pCycle.get(i)][1]++;
@@ -324,7 +357,7 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 			}else {
 				this.findFirstUnmatched();
 			}
-		}
+		}*/
 	}
 	
 	
