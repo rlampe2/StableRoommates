@@ -182,7 +182,7 @@ public class StableRoommates {
 		int current; 
 		
 		//want to give everyone in the list a chance to make a proposal
-		for(int i = 0; i < this.numPeople -1; i++) {
+		for(int i = 0; i < this.numPeople; i++) {
 			proposer = i;
 			
 			do {
