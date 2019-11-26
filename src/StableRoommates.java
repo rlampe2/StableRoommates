@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -375,7 +376,25 @@ public class StableRoommates {
 		
 		//DEBUG/GENERAL TESTING SO FAR
 		//Pause here in debugger to look at values
-		//System.out.println("Testing\n\nNumPeople expected 6\nResult:");
+		System.out.println("Testing\n\nNumPeople...");
+		if(instance1.numPeople == 6) {
+			System.out.println("Passed\n");
+		}else {
+			System.out.println("FAILURE");
+		}
+		
+		System.out.println("Reduced preferences matrix:\nExpected:");
+		System.out.println("[5], [2, 4, 3,], [4, 1], [1, 4], [3, 1, 2], [0]");
+		System.out.println("Acutal\n" + Arrays.deepToString(instance1.reducedPMatrix));
+		
+		
+		System.out.println("\nISR Matrix: -- Expeceted:\n(1,1)\t\t(1,4),\t\t(1,4),\t\t(0,2),\t\t(0,2),\t\t(1,1)");
+		System.out.println(Arrays.deepToString(instance1.lsrMatrix));
+		
+		System.out.println("\nRank Matrix: -- Expected:\n 1:  6, 3, 5, 1, 4, 2\n2:  4, 6, 2, 5, 3, 1\n3"
+				+ "3, 5, 6, 1, 2, 5\n4:   4, 1, 5, 6, 3, 2\n5:  5, 2, 3, 1, 6, 5\n6:  2, 4, 5, 3, 1, 6\n");
+		System.out.println(Arrays.deepToString(instance1.rankMatrix));
+		
 		
 		//Run phase two reduction until we either make it work or know it can't be done
 		instance1.findSolution();
