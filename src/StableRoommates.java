@@ -21,13 +21,11 @@ public class StableRoommates {
 	public Integer[][] rankMatrix = null;
 	public Integer[][] preferenceMatrix = null;
 	public Integer[][] lsrMatrix = null;
-	
+	public LinkedList<Integer>[] reducedPMatrix = null;
 	public int numPeople;
 	public boolean solnPossible = true;
 	public boolean solnFound = false;
-	
-	public LinkedList<Integer>[] reducedPMatrix = null;
-	
+		
 	public int firstInCycle;
 	public int firstRepeat;
 	public ArrayList<Integer> pCycle = new ArrayList<>();
@@ -59,7 +57,8 @@ public class StableRoommates {
 		
 		this.reducedPMatrix = this.phase1Reduction();
 		
-		
+		//for debugging to see when it gets set
+		this.firstInCycle = -1;
 	}
 	
 	
@@ -247,9 +246,12 @@ public class StableRoommates {
 	/*
 	 * this method finds the first instance at which a person still has more than one
 	 * possible partner and updates them to be the new first in the cycle
+	 * 
+	 * See PASCAL : procedure find
 	 */
 	public void findFirstUnmatched() {
 		this.firstInCycle = 0;
+		//this function is only called once in the actual program
 		while(this.reducedPMatrix[this.firstInCycle].size() == 1) {
 			this.firstInCycle++;
 		}
@@ -276,6 +278,9 @@ public class StableRoommates {
 			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size() - 1);
 		}
 		this.firstRepeat = pTerm;
+		//after stopping at the line above, i get a p array of 1, 2,3 which doesn't make sense
+		//to me... the q is 4,1,4 which matches the book page 584 (accoutning for one indexing)
+		
 		return;
 	}
 	
@@ -319,6 +324,7 @@ public class StableRoommates {
 			this.lsrMatrix[i][1] = 1;
 		}
 		
+		//this method seems to work fine //eventually remove comment
 		this.findFirstUnmatched();
 
 		while(this.solnPossible && !this.solnFound) {
@@ -376,7 +382,7 @@ public class StableRoommates {
 		
 		//DEBUG/GENERAL TESTING SO FAR
 		//Pause here in debugger to look at values
-		System.out.println("Testing\n\nNumPeople...");
+		/*System.out.println("Testing\n\nNumPeople...");
 		if(instance1.numPeople == 6) {
 			System.out.println("Passed\n");
 		}else {
@@ -394,7 +400,7 @@ public class StableRoommates {
 		System.out.println("\nRank Matrix: -- Expected:\n 1:  6, 3, 5, 1, 4, 2\n2:  4, 6, 2, 5, 3, 1\n3"
 				+ "3, 5, 6, 1, 2, 5\n4:   4, 1, 5, 6, 3, 2\n5:  5, 2, 3, 1, 6, 5\n6:  2, 4, 5, 3, 1, 6\n");
 		System.out.println(Arrays.deepToString(instance1.rankMatrix));
-		
+		*/
 		
 		//Run phase two reduction until we either make it work or know it can't be done
 		instance1.findSolution();
