@@ -23,6 +23,8 @@ public class StableRoommates {
 	
 	public int numPeople;
 	public boolean solnPossible = true;
+	public boolean solnFound = false;
+	
 	public LinkedList<Integer>[] reducedPMatrix = null;
 	
 	public int firstInCycle;
@@ -272,6 +274,40 @@ public class StableRoommates {
 	
 	
 	
+	
+	
+	public void findSolution() {
+		//First set all the second preferences based on linked list 
+		for(int i = 0; i < this.numPeople; i++) {
+			//this.lsrMatrix[i][1] = this.reducedPMatrix[i].get(1); 
+			//actually just set it to two
+			this.lsrMatrix[i][1] = 1;
+		}
+		
+		while(this.solnPossible && !this.solnFound) {
+			//see if we found a soln
+			if(this.firstInCycle >= this.numPeople -1) {
+				
+			}
+		}
+		
+		return;
+	}
+	
+	public  void printSolution() {
+		System.out.println("A stable pairing has been found!\nThe assignments are:\n");
+		for(int i = 0; i < this.numPeople; i++) {
+			System.out.printf("%2d is paired with: %2d\n", this.reducedPMatrix[i].get(0), this.reducedPMatrix[i].getLast());
+		}
+	}
+	
+	public static void printNoSolution() {
+		System.out.println("There is no stable matching for these preferences.\n");
+		return;
+	}
+	
+	
+	
 	public static void main(String[] args) {
 		//input matricies should be n by n! 
 		
@@ -290,7 +326,16 @@ public class StableRoommates {
 		
 		//DEBUG/GENERAL TESTING SO FAR
 		//Pause here in debugger to look at values
-		System.out.println("Testing\n\nNumPeople expected 6\nResult:");
+		//System.out.println("Testing\n\nNumPeople expected 6\nResult:");
+		
+		//Run phase two reduction until we either make it work or know it can't be done
+		instance1.findSolution();
+		
+		if(instance1.solnFound) {
+			instance1.printSolution();
+		}else {
+			StableRoommates.printNoSolution();
+		}
 		
 		
 	}
