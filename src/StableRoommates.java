@@ -272,7 +272,7 @@ public class StableRoommates {
 			int qTerm = this.reducedPMatrix[pTerm].get(1);
 			this.qCycle.add(qTerm);
 			//update pTerm to be last potential partner in qTerm
-			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size());
+			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size() - 1);
 		}
 		this.firstRepeat = pTerm;
 		return;
@@ -318,11 +318,26 @@ public class StableRoommates {
 			this.lsrMatrix[i][1] = 1;
 		}
 		
+		this.findFirstUnmatched();
+
 		while(this.solnPossible && !this.solnFound) {
 			//see if we found a soln
-			if(this.firstInCycle >= this.numPeople -1) {
-				
+			
+			//empty p and q
+			this.pCycle.clear();
+			this.qCycle.clear();
+			
+			this.findCycle();
+			if(this.pCycle.size() == 1) {
+				//there is no solution
+				this.solnPossible = false;
+				return;
 			}
+			//do phase two reduction
+			this.phase2Reduction();
+			
+			this.checkSolnPossible();
+			
 		}
 		
 		return;
