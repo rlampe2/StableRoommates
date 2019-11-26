@@ -149,11 +149,7 @@ public class StableRoommates {
 		
 		//Array of linked lists: 
 		@SuppressWarnings("unchecked") LinkedList<Integer>[] reducedPMatrix = new LinkedList[this.numPeople];
-		//the above is a "type safety" conversion issue... so use array list instead 
-		
-		//List<LinkedList<Integer>> reducedPMatrix = new ArrayList<LinkedList<Integer>>();
-		//wouldn't resolve to array type... ? 
-		
+
 		for(int i = 0; i < this.numPeople; i++) {
 			//initlize each list
 			reducedPMatrix[i] = new LinkedList<Integer>();
