@@ -247,7 +247,7 @@ public class StableRoommates {
 	 */
 	public void findFirstUnmatched() {
 		this.firstInCycle = 0;
-		while(this.lsrMatrix[this.firstInCycle][0] == this.lsrMatrix[this.firstInCycle][2]) {
+		while(this.reducedPMatrix[this.firstInCycle].size() == 1) {
 			this.firstInCycle++;
 		}
 		return;
@@ -267,10 +267,10 @@ public class StableRoommates {
 			this.positionInCycle[pTerm] = count;
 			count++;
 			//the next term to add to q will be the second term in pTerm's potential partners
-			int qTerm = this.reducedPMatrix[pTerm].get(this.lsrMatrix[pTerm][1]);
+			int qTerm = this.reducedPMatrix[pTerm].get(1);
 			this.qCycle.add(qTerm);
 			//update pTerm to be last potential partner in qTerm
-			pTerm = this.reducedPMatrix[qTerm].get(this.lsrMatrix[qTerm][2]);
+			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size());
 		}
 		this.firstRepeat = pTerm;
 		return;
@@ -289,9 +289,12 @@ public class StableRoommates {
 			for(int i = 0; i < this.pCycle.size(); i++) {
 				//force each q to reject the proposal it currently holds which moves its right index left one 
 				//and moves the first and second index of its previous proposer (p_i by construction) each to the right one
-				this.lsrMatrix[this.pCycle.get(i)][0]++;
-				this.lsrMatrix[this.pCycle.get(i)][1]++;
-				this.lsrMatrix[this.qCycle.get((i+1) % this.pCycle.size())][2]--;
+				
+			//	this.lsrMatrix[this.pCycle.get(i)][0]++;
+				this.reducedPMatrix[this.pCycle.get(i)].removeFirst();
+			//	this.lsrMatrix[this.pCycle.get(i)][1]++;
+			//	this.lsrMatrix[this.qCycle.get((i+1) % this.pCycle.size())][2]--;
+				this.reducedPMatrix[this.qCycle.get((i+1) % this.pCycle.size())].removeLast();
 			}
 			//update next firstInCycle to be the last element of the tail
 			if(this.positionInCycle[this.firstRepeat] > 0) {
