@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -24,6 +25,12 @@ public class StableRoommates {
 	public boolean solnPossible = true;
 	public LinkedList<Integer>[] reducedPMatrix = null;
 	
+	public int firstInCycle;
+	public int firstRepeat;
+	public ArrayList<Integer> pCycle = new ArrayList<>();
+	public ArrayList<Integer> qCycle = new ArrayList<>();
+	public Integer[] positionInCycle;
+	
 	
 	
 	//constructor
@@ -42,6 +49,7 @@ public class StableRoommates {
 		
 		
 		this.numPeople = pMatrix.length;
+		this.positionInCycle = new Integer[this.numPeople];
 		
 		this.lsrMatrix = buildLRMatrix(pMatrix.length);
 		this.rankMatrix = buildRankMatrix(pMatrix);
@@ -213,10 +221,54 @@ public class StableRoommates {
 		boolean possibleSoln = (proposer == nextChoice); //check if the next choice is theirself
 			
 			this.solnPossible = possibleSoln;
-			return true;
+			return solnPossible;
 
 	}
+	
+	/*
+	 * This method iterates over the current stage of the reducedPmatrix LinkedList and checks if each head is equal to the 
+	 * index of which list it is and if so, then it updates solnPossible to show that there is no possible solution because 
+	 * the person's only remaining possible partner is themself
+	 * 
+	 * Tbh not sure if we will use this yet
+	 */
+	public void checkSolnPossible() {
+		for(int i = 0; i < this.numPeople; i++) {
+			if(this.reducedPMatrix[i].getFirst() == i) {
+				this.solnPossible = false;
+			}
+		}
+	}
 		
+	/*
+	 * this method finds the first instance at which a person still has more than one
+	 * possible partner and updates them to be the new first in the cycle
+	 */
+	public void findFirstUnmatched() {
+		this.firstInCycle = 0;
+		while(this.lsrMatrix[this.firstInCycle][0] == this.lsrMatrix[this.firstInCycle][2]) {
+			this.firstInCycle++;
+		}
+	}
+	
+	
+	public void findCycle() {
+		int pTerm = this.firstInCycle;
+		int count = 0;
+		//while loop until an element repeats in p
+		while(!(this.pCycle.contains(pTerm))) {
+			this.pCycle.add(pTerm);
+			//keep track of where each person is in the cycle we create
+			this.positionInCycle[pTerm] = count;
+			count++;
+			//the next term to add to q will be the second term in pTerm's potential partners
+			int qTerm = this.reducedPMatrix[pTerm].get(this.lsrMatrix[pTerm][1]);
+			this.qCycle.add(qTerm);
+			//update pTerm to be last potential partner in qTerm
+			pTerm = this.reducedPMatrix[qTerm].get(this.lsrMatrix[qTerm][2]);
+		}
+		this.firstRepeat = pTerm;
+	}
 	
 	
 	
