@@ -240,6 +240,7 @@ public class StableRoommates {
 				this.solnPossible = false;
 			}
 		}
+		return;
 	}
 		
 	/*
@@ -248,12 +249,16 @@ public class StableRoommates {
 	 */
 	public void findFirstUnmatched() {
 		this.firstInCycle = 0;
-		while(this.lsrMatrix[this.firstInCycle][0] == this.lsrMatrix[this.firstInCycle][2]) {
+		while(this.reducedPMatrix[this.firstInCycle].size() == 1) {
 			this.firstInCycle++;
 		}
+		return;
 	}
 	
-	
+	/*
+	 * this method generates the two cycles p and q where q is made up of the second potential partners of
+	 * each p and p is made up of the last potential partner of the prior q
+	 */
 	public void findCycle() {
 		int pTerm = this.firstInCycle;
 		int count = 0;
@@ -264,14 +269,43 @@ public class StableRoommates {
 			this.positionInCycle[pTerm] = count;
 			count++;
 			//the next term to add to q will be the second term in pTerm's potential partners
-			int qTerm = this.reducedPMatrix[pTerm].get(this.lsrMatrix[pTerm][1]);
+			int qTerm = this.reducedPMatrix[pTerm].get(1);
 			this.qCycle.add(qTerm);
 			//update pTerm to be last potential partner in qTerm
-			pTerm = this.reducedPMatrix[qTerm].get(this.lsrMatrix[qTerm][2]);
+			pTerm = this.reducedPMatrix[qTerm].get(this.reducedPMatrix[qTerm].size());
 		}
 		this.firstRepeat = pTerm;
+		return;
 	}
 	
+	
+	/*
+	 * this method uses the two sequences p and q and forces each element in q to reject the proposal it has
+	 * this implements one iteration of the phase 2 reduction
+	 */
+	public void phase2Reduction() {
+		if(this.pCycle.size() == 1) {
+			this.solnPossible = false;
+			return;
+		}else {
+			for(int i = 0; i < this.pCycle.size(); i++) {
+				//force each q to reject the proposal it currently holds which moves its right index left one 
+				//and moves the first and second index of its previous proposer (p_i by construction) each to the right one
+				
+			//	this.lsrMatrix[this.pCycle.get(i)][0]++;
+				this.reducedPMatrix[this.pCycle.get(i)].removeFirst();
+			//	this.lsrMatrix[this.pCycle.get(i)][1]++;
+			//	this.lsrMatrix[this.qCycle.get((i+1) % this.pCycle.size())][2]--;
+				this.reducedPMatrix[this.qCycle.get((i+1) % this.pCycle.size())].removeLast();
+			}
+			//update next firstInCycle to be the last element of the tail
+			if(this.positionInCycle[this.firstRepeat] > 0) {
+				this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);
+			}else {
+				this.findFirstUnmatched();
+			}
+		}
+	}
 	
 	
 	
@@ -309,7 +343,7 @@ public class StableRoommates {
 	
 	
 	public static void main(String[] args) {
-		//input matricies should be n by n! 
+		//input matrices should be n by n! 
 		
 		//test from page 582
 		Integer[][] testPMatrix = new Integer[][] {
