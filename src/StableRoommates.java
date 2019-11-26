@@ -8,7 +8,7 @@ import java.util.Set;
  * @author rjlam, Robyn MacDonald
  * 
  * This program solves instances of the stable roomates problems, or will
- * ouput false if the instance cannot be solve. 
+ * output false if the instance cannot be solved. 
  *
  */
 public class StableRoommates {
