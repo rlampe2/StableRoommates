@@ -26,6 +26,7 @@ public class StableRoommates {
 	public boolean solnFound = false;
 		
 	public int firstInCycle;
+	//holds the person (not index) that is the first repeated person in the cycle.
 	public int firstRepeat;
 	public ArrayList<Integer> pCycle = new ArrayList<>();
 	public ArrayList<Integer> qCycle = new ArrayList<>();
@@ -282,7 +283,9 @@ public class StableRoommates {
 //I added the line below instead 
 pTerm = this.reducedPMatrix[qTerm].getLast();
 		}
+		//Note the above is the person that repeated, not an index. 
 		this.firstRepeat = pTerm;
+		
 		//after stopping at the line above, i get a p array of 1, 2,3 (2) which makes sense
 		//to me... the q is 4,1,4 which also matches the book page 584 (accoutning for one indexing)
 		
@@ -294,6 +297,13 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 	 * this method uses the two sequences p and q and forces each element in q to reject the proposal it has
 	 * this implements one iteration of the phase 2 reduction
 	 */
+	
+	
+	//TODO: Make sure that when q rejects p, we go to ps new first choice (ie what used to be their backup) and delete everything in 
+	//the backups reduced list that happens to be after p. (ie after square)
+	
+	//NOTE: This successfully found the even more reduced matrix list for first iteration of phase 2 reduction. 
+	//need to then force the deletions above. 
 	@SuppressWarnings("deprecation")
 	public void phase2Reduction() {
 		//check if we know theres isn't a possible soln:
@@ -304,27 +314,69 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 			//perform rejections
 			//start at 1 b/c pi reject q_i - 1;
 			//can't start at one, needs to start where the cycle starts. 
-			int i = this.positionInCycle[this.firstRepeat];
+			//set i to the index in the p Cycle list that is the first 
+			//person that gets repeated
+			int indexOfFirstPersonOfCycle = this.positionInCycle[this.firstRepeat];
 			
-			for(int j = i + 1; j < this.pCycle.size(); j++) {
+			for(int j = indexOfFirstPersonOfCycle + 1; j < this.pCycle.size(); j++) {
 				//delete each from each others lists...
-				this.reducedPMatrix[pCycle.get(j)].remove(new Integer(this.qCycle.get(j - 1))); //want to remove the value of q from the reduced list of p, not the index. 
+				
+				//store the VALUE of the current person (ie not their index)
+				int currentPersonP = this.pCycle.get(j);
+				this.reducedPMatrix[currentPersonP].remove(new Integer(this.qCycle.get(j - 1))); //want to remove the value of q from the reduced list of p, not the index. 
 			
 				//then also, remove p from q's list
-				this.reducedPMatrix[this.qCycle.get(j - 1)].remove(new Integer(this.pCycle.get(j)));
+				this.reducedPMatrix[this.qCycle.get(j - 1)].remove(new Integer(currentPersonP));
+				
+				//Robyn, this is the thingy we talked about before you left for break
+				//ie, when P is forced to take their second choice, we remove
+				//anyone after p on the second choice persons reduced list
+				//who has become the first person b/c we made the first reject them
+				int psSecondChoice = this.reducedPMatrix[currentPersonP].get(0);
+				//remove anything after them
+				//yes sorry this is eniffecient
+				while(this.reducedPMatrix[psSecondChoice].getLast() != currentPersonP) {
+					this.reducedPMatrix[psSecondChoice].removeLast();
+				}
+				//also it looks like in the handout on page 584 that the "bi+1" is also
+				//removed from everyone elses lists (ie full blown phase 1??)
+				
 			}
+			//running into a problem on first iteration of the above while loop.
+			//when running this and removing the people that were in person 5 (for 1 indexed)
+			//we remove one of the elements that is also supposed to get removed by our sequence
+			//so probably we will need to have another check in our removal algorithm to make
+			//certain that we are only poping off the first/last indices if the perosn we 
+			//want to remove is still actuall in that list 
+			
 			
 			//also have to do the first p that is actually in cycle getting rejected by last q because we don't hold the last p in the set
-			this.reducedPMatrix[pCycle.get(i)].remove(new Integer(this.qCycle.get(qCycle.size() - 1)));
+			this.reducedPMatrix[pCycle.get(indexOfFirstPersonOfCycle)].remove(new Integer(this.qCycle.get(qCycle.size() - 1)));
 			//remove the q from p
-			this.reducedPMatrix[this.qCycle.get(this.qCycle.size() - 1)].removeLast();
+		//	this.reducedPMatrix[this.qCycle.get(this.qCycle.size() - 1)].removeLast();
+			//above changed due to while loop inside of above for loop potentially already deleting p
+			int lastPersonInPCycle = this.pCycle.get(indexOfFirstPersonOfCycle);
+			int lastPersonInQCycle = this.qCycle.get(this.qCycle.size() - 1);
+			this.reducedPMatrix[lastPersonInQCycle].remove(new Integer(lastPersonInPCycle));
+			
+			//do the same while loop for their second:
+			
+			int psSecondChoice = this.reducedPMatrix[lastPersonInPCycle].get(0);
+			//remove anything after them
+			while(this.reducedPMatrix[psSecondChoice].getLast() != lastPersonInPCycle) {
+				this.reducedPMatrix[psSecondChoice].removeLast();
+			}
 			
 			
 			
 			//update the first in cycle to be the tail of this guy
 			
-			//fix
-			this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);			
+			//TODO VERIFY
+			if(this.positionInCycle[this.firstRepeat] > 0) {
+				this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);
+			}else {
+				this.findFirstUnmatched();
+			}			
 		}
 		
 		
@@ -358,6 +410,8 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 				this.findFirstUnmatched();
 			}
 		}*/
+		
+		
 	}
 	
 	
@@ -373,15 +427,20 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		
 		//this method seems to work fine //eventually remove comment
 		this.findFirstUnmatched();
+		
+				
 
-		while(this.solnPossible && !this.solnFound) {
+		while(this.solnPossible && !this.checkIfSolnFound()) {
 			//see if we found a soln
+			this.checkIfSolnFound();
 			
 			//empty p and q
 			this.pCycle.clear();
 			this.qCycle.clear();
 			
-			this.findCycle();
+			
+			
+			this.findCycle();//need to check if solveavel fisr
 			if(this.pCycle.size() == 1) {
 				//there is no solution
 				this.solnPossible = false;
@@ -397,10 +456,23 @@ pTerm = this.reducedPMatrix[qTerm].getLast();
 		return;
 	}
 	
+	
+	public boolean checkIfSolnFound() {
+		
+		this.solnFound = true;
+		for(int i = 0; i < this.numPeople; i++) {
+			if(this.reducedPMatrix[i].size() != 1) {
+				this.solnFound = false;
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public  void printSolution() {
 		System.out.println("A stable pairing has been found!\nThe assignments are:\n");
 		for(int i = 0; i < this.numPeople; i++) {
-			System.out.printf("%2d is paired with: %2d\n", this.reducedPMatrix[i].get(0), this.reducedPMatrix[i].getLast());
+			System.out.printf("%2d is paired with: %2d\n", i, this.reducedPMatrix[i].get(0));
 		}
 	}
 	
