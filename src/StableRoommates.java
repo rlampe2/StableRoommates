@@ -583,6 +583,58 @@ public class StableRoommates {
 		}
 		System.out.printf("The runtime of this instance (size 8) was: %d nanoseconds\n", elapsedTime3);
 
+		
+		
+		//Test 4 - known no solution from page 578
+		Integer[][] testPMatrix4 = new Integer[][] {
+			{2, 3, 4, 1},
+			{3, 1, 4, 2},
+			{1, 2, 4, 3},
+			{1, 2, 3, 4},
+		};
+		
+		long startTime4 = System.nanoTime();
+
+		StableRoommates instance4 = new StableRoommates(testPMatrix4);
+		instance4.findSolution();
+		long elapsedTime4 = System.nanoTime() - startTime4;
+
+		System.out.println("\nTest 4:\nTesting on a known no soln- preferences matrix:");
+
+		if(instance4.solnFound) {
+			instance4.printSolution();
+		}else {
+			StableRoommates.printNoSolution();
+		}
+		System.out.printf("The runtime of this instance (size 4) was: %d nanoseconds\n", elapsedTime4);
+
+		
+		//Test 4 - known no solution from page 578
+		Integer[][] testPMatrix5 = new Integer[][] {
+			{2, 3, 4, 1},
+			{3, 1, 4, 2},
+			{1, 2, 4, 3},
+			{2, 1, 3, 4},
+		};
+		
+		long startTime5 = System.nanoTime();
+
+		StableRoommates instance5 = new StableRoommates(testPMatrix5);
+		instance5.findSolution();
+		long elapsedTime5 = System.nanoTime() - startTime5;
+
+		System.out.println("\nTest 5:\nTesting on a known no soln- preferences matrix:");
+
+		if(instance5.solnFound) {
+			instance5.printSolution();
+		}else {
+			StableRoommates.printNoSolution();
+		}
+		System.out.printf("The runtime of this instance (size 4) was: %d nanoseconds\n", elapsedTime5);
+
+		
+		
+		
 	}
 	
 	
