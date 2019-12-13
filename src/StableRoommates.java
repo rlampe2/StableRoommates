@@ -5,18 +5,26 @@ import java.util.Set;
 
 /**
  * 
- * @author rjlam, Robyn MacDonald
+ * @authors Robyn MacDonald, Ryan Lampe
  * 
- * This program solves instances of the stable roomates problems, or will
- * output false if the instance cannot be solved. 
+ * This program solves instances of the stable roommates problem
+ * by printing out a stable matching, or if no such matching exists, 
+ * will output false.
+ * 
+ * See: http://www.dcs.gla.ac.uk/~pat/jchoco/roommates/papers/Comp_sdarticle.pdf
+ * for article reference
  *
  */
 public class StableRoommates {
 
-	//OUR "GLOBAL VARIABLES" IN PASCAL IMPLEMENTATION - 
+	/*
+	 * The Pascal Implementation utilizes global variables. To parallel this 
+	 * approach in Java, we have created these variables as apart of the class instantiation.
+	 * Thus when we create our instance, these variables will be accessible anywhere.
+	 */
+	//OUR "GLOBAL VARIABLES" FROM PASCAL IMPLEMENTATION - 
 	static int MAX_SIZE = 91;
 	
-	//globals for problem instance 
 	public Integer[][] rankMatrix = null;
 	public Integer[][] preferenceMatrix = null;
 	public Integer[][] lsrMatrix = null;
@@ -26,18 +34,30 @@ public class StableRoommates {
 	public boolean solnFound = false;
 		
 	public int firstInCycle;
-	//holds the person (not index) that is the first repeated person in the cycle.
+	//Note: stores person, not index
 	public int firstRepeat;
 	public ArrayList<Integer> pCycle = new ArrayList<>();
 	public ArrayList<Integer> qCycle = new ArrayList<>();
 	public Integer[] positionInCycle;
 	
-	//to help with making final output match input format
+	//Ensure output matches input format
 	public boolean wasOneIndexed; 
 	
 	
 	
-	//constructor
+	/**
+	 * The constructor is responsible for developing a class instance to use based on the input 
+	 * preferences matrix. 
+	 * 
+	 * A check to see if changing the index base of the preference matrix is done.
+	 * 
+	 * Initialize the LSR Matrix for the problem instance. 
+	 * 
+	 * Create the Rank Matrix for the problem instance.
+	 * 
+	 * The first phase reduction is then performed. 
+	 * @param pMatrix
+	 */
 	public StableRoommates(Integer[][] pMatrix) {
 		this.preferenceMatrix = pMatrix;
 		//check the first row to see if there is an entry equal to the size of the matrix
@@ -60,7 +80,7 @@ public class StableRoommates {
 		
 		this.reducedPMatrix = this.phase1Reduction();
 		
-		//for debugging to see when it gets set
+		//Set default
 		this.firstInCycle = -1;
 	}
 	
@@ -69,8 +89,9 @@ public class StableRoommates {
 	
 	
 	/**
-	 * Helper function for constructor to make certain we don't have 1 based preference
-	 * matricies 
+	 * The algorithm is designed for 0 indexed arrays and matrices, and thus any inputs that 
+	 * are one based must be converted to 0 index form. The resulting assignments will then be
+	 * converted back to one based pairings to match the input form. 
 	 * @param matrix
 	 */
 	public void zeroifyMatrix() {
@@ -88,9 +109,16 @@ public class StableRoommates {
 	
 	
 	/**
-	 * This method creates and initializes a 3 column matrix where the left column is left index, second column is
-	 * the second person in their reduced list, and the third colum is the right index. 
-	 * build
+	 * This method creates and initializes a 3 Column LSR Matrix for based on a preference matrix. 
+	 * 
+	 * The LSR Matrix is initialized based on the size of the preference matrix. The LSR Matrix is used in the 
+	 * phase one reduction (proposal stage) of the algorithm to keep track of the reduction
+	 * of the preference lists. The first, second, and third columns represent the positions of the best, second best, and worst 
+	 * potential partners that each person (row) has in their current reduced preference list respectively. 
+	 * 
+	 * See page 587 for more information. 
+	 * 
+	 * 
 	 * @param pMatrix
 	 * @return
 	 */
@@ -106,14 +134,20 @@ public class StableRoommates {
 	}
 	
 	/**
-	 * This method takes in a preference matrix, (assumed to include sentinels) 
+	 * This method takes in a preference matrix (assumed to include sentinels) 
 	 * and returns the corresponding rank matrix. 
+	 * 
+	 * A rank matrix is created to allow for rapid comparisons between alternative choices for an individual.
+	 * See page 587 for more information. 
+	 * 
+	 * 
 	 * @param pMatrix
 	 * @return
 	 */
 	public Integer[][] buildRankMatrix(Integer[][] pMatrix){
 		
-		int numPeople = pMatrix.length; //number of people, same as num preferences b/c including sentials
+		int numPeople = pMatrix.length; 
+		//number of people, same as num preferences b/c including sentinels
 		
 		Integer[][] rankMatrix = new Integer[numPeople][numPeople];
 		
@@ -122,7 +156,6 @@ public class StableRoommates {
 				rankMatrix[i][pMatrix[i][j] ] = j;
 			}
 		}
-		
 		return rankMatrix;
 	}
 	
@@ -132,30 +165,33 @@ public class StableRoommates {
 	
 	
 	/**
-	 * This method performs the phase one reduction on the object instatnce (ie to get access to "global" variables)
-	 * and returns the "reduced list" in the form of an array of linked lists for each person. 
+	 * This method performs the phase one reduction on the object instance 
+	 * and returns the resulting "reduced list" in the form of an array of linked lists
+	 * where each index in the array represents a person, and the list attached to that index is the respective
+	 * persons reduced preference list. 
+	 * 
+	 * See page 579
+	 * 
 	 * @return
 	 */
 	public LinkedList<Integer>[] phase1Reduction() {
 		
-		//Do proposals and set left/right based on those
+		//Perform Proposals
 		if(!this.doProposals()) {
-			//a solution is not possible
+			//A stable matching is not possible
 			return null;
 		}
-
 		
 		//Generate linked list based on the proposals and left/right preference locations 
 		
-		//Array of linked lists: 
+		//Create array of linked lists: 
 		@SuppressWarnings("unchecked") LinkedList<Integer>[] reducedPMatrix = new LinkedList[this.numPeople];
 
 		for(int i = 0; i < this.numPeople; i++) {
-			//initlize each list
+			//Initialize each list
 			reducedPMatrix[i] = new LinkedList<Integer>();
 			for(int j = 0; j < this.numPeople; j++) {
-				
-				//see corollary 1.2 and 1.3 or something like that
+				//See Corollaries 1.2 and 1.3
 				if(!( j > this.lsrMatrix[i][2]  || this.lsrMatrix[this.preferenceMatrix[i][j] ] [2] < this.rankMatrix[this.preferenceMatrix[i][j]][i])) {
 					reducedPMatrix[i].add(this.preferenceMatrix[i][j]);
 				}
@@ -169,13 +205,17 @@ public class StableRoommates {
 	
 	
 	/**
-	 * This method performs the series of propsals to find and set the left/right preferences of 
-	 * the preference matrix. It returns false if any persons left/right indicies match, ie saying that they
-	 * proposed to themself. 
+	 * This method performs the series of proposals to determine the left/right preferences of 
+	 * the LSR matrix.
+	 * 
+	 * 	The return value is used to determine if the instance is certain to have no stable matching (false)
+	 * 	or that a stable matching may still be possible (true). 
+	 *  See Corollary 1.1
+	 *  
 	 * @return
 	 */
 	public boolean doProposals() {
-		//build set to keep track of who has made a proposal
+		//Create set to keep track of who has proposed so far
         Set<Integer> hasProposed = new HashSet<Integer>(); 
 		
 		int proposer = -1; //stop eclipse from complaining
@@ -189,49 +229,34 @@ public class StableRoommates {
 			do {
 				//proposer chooses their next choice 
 				nextChoice = this.preferenceMatrix[proposer][ this.lsrMatrix[proposer][0] ] ;
-			
-				//what is the purpose of current?
 				current = this.preferenceMatrix[nextChoice][this.lsrMatrix[nextChoice][2]];
 				
 				while(this.rankMatrix[nextChoice][proposer] > this.rankMatrix[nextChoice][current] ) {
 					//the proposer is rejected by their next choice
 					
-					//update the proposers left index
+					//update the proposer's left index
 					this.lsrMatrix[proposer][0] += 1;
 					//update next choice
 					nextChoice = this.preferenceMatrix[proposer][this.lsrMatrix[proposer ][0]];
 					current = this.preferenceMatrix[nextChoice][this.lsrMatrix[nextChoice][2]];
 				}
-			
 				//next choice holds the proposer, and rejects current 
 				this.lsrMatrix[nextChoice][2] = this.rankMatrix[nextChoice][proposer];
-				
 				proposer = current;
-
 			} while( hasProposed.contains(nextChoice) );//while the current next choice object hasn't made a proposal
-			
-			
 			hasProposed.add(nextChoice);
 		}
-		
 		boolean possibleSoln = (proposer == nextChoice); //check if the next choice is their-self
-			
 			this.solnPossible = possibleSoln;
 			return solnPossible;
-
 	}
 	
 	/**
 	 * This method iterates over the current stage of the reducedPmatrix LinkedList and checks if each head is equal to the 
 	 * index of which list it is and if so, then it updates solnPossible to show that there is no possible solution because 
-	 * the person's only remaining possible partner is themself
+	 * the person's only remaining possible partner is his/her self.
 	 * 
-	 * Tbh not sure if we will use this yet
-	 * 
-	 * This needs either removed or modified, because the phase two reduction method
-	 * is getting empty strings. 
-	 * -Are we actually using this importantly?
-	 * 
+	 * See Corollary 1.2
 	 */
 	public void checkSolnPossible() {
 		if(this.solnPossible == false) {
@@ -246,21 +271,17 @@ public class StableRoommates {
 	}
 		
 	/**
-	 * this method finds the first instance at which a person still has more than one
+	 * This method finds the first instance at which a person still has more than one
 	 * possible partner and updates them to be the new first in the cycle
 	 * 
-	 * This is causing problems if every single list has only one element...
-	 * adding check before call to this function
 	 * See PASCAL : procedure find
 	 */
 	public void findFirstUnmatched() {
 		this.firstInCycle = 0;
-		//this function is only called once in the actual program
 		while(this.reducedPMatrix[this.firstInCycle].size() == 1) {
 			this.firstInCycle++;
 			if(this.firstInCycle == this.numPeople) {
 				//we have a soln!
-				//TODO Verify that this is what we want, as opposed to no soln found
 				this.solnFound = true;
 				return;
 			}
@@ -340,21 +361,24 @@ public class StableRoommates {
 				}
 				int psSecondChoice = this.reducedPMatrix[currentPersonP].get(0);
 				//remove anything after them
-				//yes sorry this is eniffecient
 				while(this.reducedPMatrix[psSecondChoice].getLast() != currentPersonP) {
 					this.reducedPMatrix[psSecondChoice].removeLast();
 				}
-			}//when running this and removing the people that were in person 5 (for 1 indexed)
-			//we remove one of the elements that is also supposed to get removed by our sequence
-			//so probably we will need to have another check in our removal algorithm to make
-			//certain that we are only poping off the first/last indices if the perosn we 
-			//want to remove is still actuall in that list 
+			}
 			
+			/*
+			 * Chan - Don't worry about this, its a revision history...
+			 * 
+			 * when running this and removing the people that were in person 5 (for 1 indexed)
+			we remove one of the elements that is also supposed to get removed by our sequence
+			so probably we will need to have another check in our removal algorithm to make
+			certain that we are only popping off the first/last indices if the person we 
+			want to remove is still actually in that list 
+			*/
 			
-			//also have to do the first p that is actually in cycle getting rejected by last q because we don't hold the last p in the set
+			//Have to do the first p that is actually in cycle getting rejected by last q because we don't hold the last p in the set
 			this.reducedPMatrix[pCycle.get(indexOfFirstPersonOfCycle)].remove(new Integer(this.qCycle.get(qCycle.size() - 1)));
 			//remove the q from p
-		//	this.reducedPMatrix[this.qCycle.get(this.qCycle.size() - 1)].removeLast();
 			//above changed due to while loop inside of above for loop potentially already deleting p
 			int lastPersonInPCycle = this.pCycle.get(indexOfFirstPersonOfCycle);
 			int lastPersonInQCycle = this.qCycle.get(this.qCycle.size() - 1);
@@ -364,12 +388,12 @@ public class StableRoommates {
 			
 			int psSecondChoice = this.reducedPMatrix[lastPersonInPCycle].get(0);
 			//remove anything after them
+			//IE Corollary 1.3 (Ref'd page 584)
 			while(this.reducedPMatrix[psSecondChoice].getLast() != lastPersonInPCycle) {
 				this.reducedPMatrix[psSecondChoice].removeLast();
 			}
 			//update the first in cycle to be the tail of this guy
 			
-			//TODO VERIFY
 			if(this.positionInCycle[this.firstRepeat] > 0) {
 				this.firstInCycle = this.pCycle.get(this.positionInCycle[this.firstRepeat] - 1);
 			}else {
@@ -390,8 +414,6 @@ public class StableRoommates {
 		
 		this.findFirstUnmatched();
 		
-				
-
 		while(this.solnPossible && !this.checkIfSolnFound()) {
 			//see if we found a soln
 			this.checkIfSolnFound();
@@ -408,15 +430,16 @@ public class StableRoommates {
 			}
 			//do phase two reduction
 			this.phase2Reduction();
-			
 			this.checkSolnPossible();
-			
 		}
-		
 		return;
 	}
 	
 	
+	/**
+	 * Based on Lemma four (Page 585)
+	 * @return
+	 */
 	public boolean checkIfSolnFound() {
 		
 		this.solnFound = true;
@@ -429,7 +452,9 @@ public class StableRoommates {
 		return true;
 	}
 	
-	public  void printSolution() {
+	
+	
+	public void printSolution() {
 		System.out.println("A stable pairing has been found!\nThe assignments are:\n");
 		int j = 0;
 		if(this.wasOneIndexed) {
@@ -450,7 +475,7 @@ public class StableRoommates {
 	public static void main(String[] args) {
 		//input matrices should be n by n! 
 		
-		//test from page 582
+		//Test from page 582
 		Integer[][] testPMatrix = new Integer[][] {
 			{4, 6, 2, 5, 3, 1},
 			{6, 3, 5, 1, 4, 2},
@@ -459,11 +484,12 @@ public class StableRoommates {
 			{4, 2, 3, 6, 1, 5},
 			{5, 1, 4, 2, 3, 6}
 		};
+		long startTime1 = System.nanoTime();
 		
 		//create the object
 		StableRoommates instance1 = new StableRoommates(testPMatrix);
 		
-		//DEBUG/GENERAL TESTING SO FAR
+		//DEBUG and GENERAL TESTING OF INDIVIDUAL METHODS SO FAR
 		//Pause here in debugger to look at values
 		/*System.out.println("Testing\n\nNumPeople...");
 		if(instance1.numPeople == 6) {
@@ -486,14 +512,20 @@ public class StableRoommates {
 		*/
 		
 		//Run phase two reduction until we either make it work or know it can't be done
-		System.out.println("\nTesting on a known solvable preferences matrix:");
+		System.out.println("\nTest 1\nTesting on a known solvable preferences matrix:");
 		instance1.findSolution();
 		
+		
+		//Don't count time taken to print the solution:
+		long elapsedTime1 = System.nanoTime() - startTime1;
 		if(instance1.solnFound) {
 			instance1.printSolution();
 		}else {
 			StableRoommates.printNoSolution();
 		}
+		System.out.printf("The runtime of this instance (size 6) was: %d nanoseconds\n", elapsedTime1);
+		
+		
 		
 		
 		
@@ -507,20 +539,25 @@ public class StableRoommates {
 			{6, 1, 3, 4, 2, 5},
 			{4, 2, 5, 1, 3, 6}
 		};
+		
+		long startTime2 = System.nanoTime();
+
 		StableRoommates instance2 = new StableRoommates(testPMatrix2);
 		instance2.findSolution();
-		//RJL - verified that the reduced matrix is correct. 
-		//RJL - verified that the first iteration pcycle is correct (0 1 2)
-		//Q cycle looks good too!
-		System.out.println("\nTesting on a known no soln- preferences matrix:");
-		
+		long elapsedTime2 = System.nanoTime() - startTime2;
+
+		System.out.println("\nTest 2:\nTesting on a known no soln- preferences matrix:");
+
 		if(instance2.solnFound) {
 			instance2.printSolution();
 		}else {
 			StableRoommates.printNoSolution();
 		}
+		System.out.printf("The runtime of this instance (size 6) was: %d nanoseconds\n", elapsedTime2);
+
 		
 		
+		//Test 3 - Page 579 - Several stable pairings. 
 		Integer[][] testPMatrix3 = new Integer[][] {
 			{2, 5, 4, 6, 7, 8, 3, 1},
 			{3, 6, 1, 7, 8, 5, 4, 2},
@@ -531,16 +568,20 @@ public class StableRoommates {
 			{8, 3, 6, 4, 1, 2, 5, 7},
 			{5, 4, 7, 1, 2, 3, 6, 8}
 		};
+		long startTime3 = System.nanoTime();
+
 		StableRoommates instance3 = new StableRoommates(testPMatrix3);
 		instance3.findSolution();
-		
-		System.out.println("\nTesting on a known several soln- preferences matrix:");
+		long elapsedTime3 = System.nanoTime() - startTime3;
+
+		System.out.println("\nTest 3:\nTesting on a known several soln- preferences matrix:");
 		
 		if(instance3.solnFound) {
 			instance3.printSolution();
 		}else {
 			StableRoommates.printNoSolution();
 		}
+		System.out.printf("The runtime of this instance (size 8) was: %d nanoseconds\n", elapsedTime3);
 
 	}
 	
